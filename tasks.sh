@@ -185,7 +185,7 @@ do
             close_progress_window "$WINDOW_ID"
         fi
         show_done_message "작업이 완료되었습니다.\n확인을 누르면 재부팅됩니다."
-        reboot
+        #reboot
     else
         log_message "error" "작업 실패"
         show_done_message "작업 중 오류가 발생했습니다."
