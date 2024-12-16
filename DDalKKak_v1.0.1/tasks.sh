@@ -79,7 +79,7 @@ check_progress_window_alive() {
 
 show_message() {
     local level=${1:-'info'}
-    local message="$2"
+    local message="$1"
     log_message "$level" "완료 메시지 표시: $message"
     kdialog --msgbox "$message"
 }
@@ -185,11 +185,12 @@ do
         if check_progress_window_alive "$WINDOW_ID"; then
             close_progress_window "$WINDOW_ID"
         fi
-        show_message "info" "작업이 완료되었습니다.\n확인을 누르면 재부팅됩니다."
+        show_message "error" "작업이 완료되었습니다.\n확인을 누르면 재부팅됩니다."
         reboot
     else
         log_message "error" "작업 실패"
         show_message "error" "작업 중 오류가 발생했습니다."
     fi
     break
+
 done

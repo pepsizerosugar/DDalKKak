@@ -102,7 +102,6 @@ run_script() {
     cd "$download_dir" || exit
 
     log_message "info" "스크립트 실행 준비 중..."
-    chmod +x ./tasks.sh
     if [ ! -x "./tasks.sh" ]; then
         log_and_show_message "error" "tasks.sh 실행 파일이 없거나 실행 권한이 없습니다."
         return 1
@@ -118,7 +117,8 @@ run_script() {
     log_message "info" "tasks.sh 실행 완료."
 }
 
-main() {
+while :
+do
     log_and_show_message "info" "스크립트 실행 시작"
     fetch_release_info
     if ! verify_existing_version; then
@@ -126,7 +126,6 @@ main() {
         extract_tarball
     fi
     run_script
-}
-
-main
+    break
+done
 
