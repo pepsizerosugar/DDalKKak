@@ -122,7 +122,7 @@ def perform_api_request(driver: webdriver.Chrome) -> bool:
     request_payload = '{"txId":null,"code":null,"webdriver":false}'
     headers = {
         "authority": "poe2-gamestart-web-api.game.daum.net",
-        "accept": "application/json, text/plain, */*",
+        "accept": "application/json",
         "content-type": "application/json; charset=UTF-8",
         "origin": "https://pubsvc.game.daum.net",
         "referer": "https://pubsvc.game.daum.net/",
@@ -154,7 +154,7 @@ def perform_api_request(driver: webdriver.Chrome) -> bool:
         logger.info("API 응답 처리 중...")
         if "error" in response:
             handle_error(
-                f"API 호출 중 오류 발생: {response['error']}", "error"
+                f"API 호출 중 오류 발생: 데스크톱 모드에서 보안 인증이 필요합니다.", "error"
             )
             return False
 
