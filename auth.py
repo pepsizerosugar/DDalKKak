@@ -1,13 +1,14 @@
-import os
 import glob
 import json
 import logging
+import os
+
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -87,7 +88,7 @@ def setup_webdriver() -> webdriver.Chrome:
     return driver
 
 
-def handle_error(message, level):
+def handle_error(message, level) -> None:
     """
     에러 메시지 처리 및 로그 기록
     """
@@ -98,7 +99,7 @@ def handle_error(message, level):
     print(f"ERROR_MESSAGE={message}")
 
 
-def get_status_message(status):
+def get_status_message(status) -> str:
     """
     상태 코드에 따른 메시지 반환
     """
@@ -109,7 +110,7 @@ def get_status_message(status):
     return status_messages.get(status, "알 수 없는 상태")
 
 
-def perform_api_request(driver: webdriver.Chrome):
+def perform_api_request(driver: webdriver.Chrome) -> bool:
     """
     API를 통해 access_token, user_id 파싱
     """
@@ -152,17 +153,24 @@ def perform_api_request(driver: webdriver.Chrome):
 
         logger.info("API 응답 처리 중...")
         if "error" in response:
-            handle_error(f"API 호출 중 오류 발생: {response['error']}", "error")
+            handle_error(
+                f"API 호출 중 오류 발생: {response['error']}", "error"
+            )
             return False
 
         status = response.get("status")
         if status != "PASS":
-            handle_error(f"API 호출 실패: {get_status_message(status)} (status={status})", "warning")
+            handle_error(
+                f"API 호출 실패: {get_status_message(status)} (status={status})",
+                "warning",
+            )
             return False
 
         token, mid = response.get("token"), response.get("mid")
         if not token or not mid:
-            handle_error("응답에 token 또는 mid가 포함되지 않았습니다.", "warning")
+            handle_error(
+                "응답에 token 또는 mid가 포함되지 않았습니다.", "warning"
+            )
             return False
 
         logger.info(f"token: {token}")
@@ -176,7 +184,7 @@ def perform_api_request(driver: webdriver.Chrome):
         return False
 
 
-def get_token_and_mid():
+def get_token_and_mid() -> None:
     logger.info("WebDriver 설정 시작...")
     driver = setup_webdriver()
     try:

@@ -3,11 +3,10 @@ import os
 import subprocess
 import sys
 import time
-import psutil
-import vdf
-
 from typing import Optional, Dict
 
+import psutil
+import vdf
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -238,13 +237,13 @@ def kill_steam_and_restart_background() -> bool:
             return False
 
 
-def update_steam_launch_options():
+def update_steam_launch_options() -> None:
     """
     Steam shortcuts.vdf 파일 업데이트
     """
     logger.info("Steam shortcuts.vdf 파일 업데이트 시작...")
     if len(sys.argv) < 4:
-        error_message="Shortcuts 업데이트에 필요한 인자가 부족합니다."
+        error_message = "Shortcuts 업데이트에 필요한 인자가 부족합니다."
         logger.error(error_message)
         print("TASK_2=0")
         print(f"ERROR_MESSAGE={error_message}")
@@ -258,7 +257,7 @@ def update_steam_launch_options():
 
     user_personas = get_steam_user_personas()
     if not user_personas:
-        error_message="Steam 유저 정보를 찾을 수 없습니다."
+        error_message = "Steam 유저 정보를 찾을 수 없습니다."
         logger.error(error_message)
         print("TASK_2=0")
         print(f"ERROR_MESSAGE={error_message}")
@@ -270,7 +269,7 @@ def update_steam_launch_options():
     logger.info(f"shortcuts.vdf 파일 경로: {file_path}")
 
     if not os.path.exists(file_path):
-        error_message="shortcuts.vdf 파일을 찾을 수 없습니다."
+        error_message = "shortcuts.vdf 파일을 찾을 수 없습니다."
         logger.error(error_message)
         print("TASK_2=0")
         print(f"ERROR_MESSAGE={error_message}")
@@ -286,7 +285,7 @@ def update_steam_launch_options():
         logger.info("Shortcuts 업데이트 성공.")
         print("TASK_2=1")
     else:
-        error_message="Shortcuts 업데이트 실패."
+        error_message = "Shortcuts 업데이트 실패."
         logger.error(error_message)
         print("TASK_2=0")
         print(f"ERROR_MESSAGE={error_message}")
