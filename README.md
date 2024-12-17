@@ -5,7 +5,7 @@
 ![Compatibility](https://img.shields.io/badge/Compatible-Steam_Deck-orange)
 ![GitHub all releases](https://img.shields.io/github/downloads/pepsizerosugar/DDalKKak/total?color=purple)
 
-**DDalKKak**은 카카오게임즈 Path Of Exile 2를 **Steam Deck**에서 보다 원활하게 실행할 수 있도록 돕는 자동화 도구입니다.
+**DDalKKak**은 카카오게임즈 Path Of Exile 2를 **스팀덱**에서 보다 원활하게 실행할 수 있도록 돕는 자동화 도구입니다.
 * 실행하기 위한 조건은 아래와 같습니다.
   1. SteamOS `마켓`을 통해 `Chrome` 설치.
   2. 해당 `Chrome`으로 `카카오 POE2 페이지`에 이미 `로그인`을 `한 번`이라도 한 상태.
@@ -26,7 +26,7 @@
 
 ### Step 1: Konsole(이하 터미널)에서 스크립트 다운로드 및 부가 설정
 
-1. Steam Deck의 **데스크톱 모드**로 전환합니다.  
+1. 스팀덱의 **데스크톱 모드**로 전환합니다.  
 2. 터미널을 열고 다음 명령어를 입력합니다:  
    ```bash
     wget https://raw.githubusercontent.com/pepsizerosugar/DDalKKak/main/run.sh -O ~/Downloads/run.sh
