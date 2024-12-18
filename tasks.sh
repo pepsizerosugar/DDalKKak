@@ -139,10 +139,12 @@ setup_dependencies() {
 				log_message "info" "Vdf 이미 설치됨. 스킵..."
 		else
 				log_message "info" "Vdf 설치 중..."
+				sudo steamos-readonly disable
 				if ! "$VENV_DIR/bin/pip" install vdf; then
 						log_message "error" "Vdf 설치 실패."
 						exit 1
 				fi
+				sudo steamos-readonly enable
 		fi
 
 		log_message "info" "Psutil 설치 확인 중..."
@@ -150,10 +152,12 @@ setup_dependencies() {
 				log_message "info" "Psutil 이미 설치됨. 스킵..."
 		else
 				log_message "info" "Psutil 설치 중..."
+				sudo steamos-readonly disable
 				if ! "$VENV_DIR/bin/pip" install psutil; then
 						log_message "error" "Psutil 설치 실패."
 						exit 1
 				fi
+				sudo steamos-readonly enable
 		fi
 
 		log_message "info" "Selenium 설치 확인 중..."
@@ -161,10 +165,12 @@ setup_dependencies() {
 				log_message "info" "Selenium 이미 설치됨. 스킵..."
 		else
 				log_message "info" "Selenium 설치 중..."
+				sudo steamos-readonly disable
 				if ! "$VENV_DIR/bin/pip" install selenium; then
 						log_message "error" "Selenium 설치 실패."
 						exit 1
 				fi
+				sudo steamos-readonly enable
 		fi
 
 		log_message "info" "패키지 설치 완료. Chrome 프로세스 종료 시도..."
