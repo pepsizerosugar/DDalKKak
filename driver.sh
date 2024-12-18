@@ -65,11 +65,22 @@ get_chrome_major_version() {
 
 fetch_chromedriver_json() {
     log_message "info" "ChromeDriver 버전 정보 가져오는 중..."
-    CHROMEDRIVER_URL="https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json"
-    CHROMEDRIVER_JSON=$(curl -sSL "$CHROMEDRIVER_URL")
+
+    CHROMEDRIVER_URL_HTTP="http://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json"
+    CHROMEDRIVER_JSON=$(curl -sSL "$CHROMEDRIVER_URL_HTTP")
+
     if [ -z "$CHROMEDRIVER_JSON" ]; then
-        error_exit "ChromeDriver JSON 데이터를 가져올 수 없습니다."
+        log_message "warning" "HTTP 요청 실패. HTTPS로 인증서 검사를 비활성화하고 재시도합니다."
+
+        CHROMEDRIVER_URL_HTTPS="https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json"
+        CHROMEDRIVER_JSON=$(curl -sSL -k "$CHROMEDRIVER_URL_HTTPS")
+
+        if [ -z "$CHROMEDRIVER_JSON" ]; then
+            error_exit "HTTPS 요청도 실패했습니다. ChromeDriver JSON 데이터를 가져올 수 없습니다."
+        fi
     fi
+
+    log_message "info" "ChromeDriver JSON 데이터 가져오기 성공."
 }
 
 get_closest_chromedriver_version() {
