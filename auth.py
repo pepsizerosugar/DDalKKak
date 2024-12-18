@@ -25,16 +25,22 @@ def find_chrome_binary_path() -> str:
     Flatpak으로 설치된 Chrome 실행 파일 경로를 동적으로 검색
     """
     logger.info("Chrome 실행 파일 경로 검색 중...")
-    flatpak_path = os.path.expanduser(
-        "~/.local/share/flatpak/app/com.google.Chrome/"
-    )
-    binary_glob = os.path.join(
-        flatpak_path, "x86_64/stable/*/files/extra/chrome"
-    )
-    binary_path = glob.glob(binary_glob)
-    if binary_path:
-        logger.info(f"Chrome 실행 파일 경로: {binary_path[0]}")
-        return binary_path[0]
+
+    flatpak_path_map = {
+        "_": "~/.local/share/flatpak/app/com.google.Chrome/",
+        "__": "~/var/lib/flatpak/app/com.google.Chrome/",
+    }
+
+    for _, path in flatpak_path_map.items():
+        flatpak_path = os.path.expanduser(path)
+        binary_glob = os.path.join(
+            flatpak_path, "x86_64/stable/*/files/extra/chrome"
+        )
+        binary_path = glob.glob(binary_glob)
+        if binary_path:
+            logger.info(f"Chrome 실행 파일 경로: {binary_path[0]}")
+            return binary_path[0]
+
     error_msg = "Chrome 실행 파일을 찾을 수 없습니다. Flatpak Chrome이 설치되었는지 확인하세요."
     logger.error(error_msg)
     raise FileNotFoundError(error_msg)
@@ -154,7 +160,8 @@ def perform_api_request(driver: webdriver.Chrome) -> bool:
         logger.info("API 응답 처리 중...")
         if "error" in response:
             handle_error(
-                f"API 호출 중 오류 발생: 데스크톱 모드에서 보안 인증이 필요합니다.", "error"
+                f"API 호출 중 오류 발생: 데스크톱 모드에서 보안 인증이 필요합니다.",
+                "error",
             )
             return False
 
