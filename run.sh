@@ -107,8 +107,15 @@ check_tasks_permissions() {
     ls -l ./tasks.sh | log_message "info" "tasks.sh 파일 정보: $(cat -)"
 
     if [ ! -x "./tasks.sh" ]; then
-        log_and_show_message "error" "tasks.sh 실행 권한이 없습니다."
-        exit 1
+        log_message "warning" "tasks.sh 실행 권한이 없습니다. 권한을 부여합니다."
+        sudo steamos-readonly disable
+        chmod +x ./tasks.sh
+        sudo steamos-readonly enable
+        if [ $? -ne 0 ]; then
+            log_and_show_message "error" "tasks.sh 실행 권한 부여 실패."
+            exit 1
+        fi
+        log_message "info" "tasks.sh 실행 권한이 부여되었습니다."
     fi
 }
 
