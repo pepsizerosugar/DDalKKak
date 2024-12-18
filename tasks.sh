@@ -97,6 +97,24 @@ process_error() {
     exit 1
 }
 
+install_pip() {
+    log_message "info" "pip 설치 중..."
+    curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+    if [ $? -ne 0 ]; then
+        log_message "error" "pip 설치 스크립트 다운로드 실패."
+        return 1
+    fi
+
+    sudo $PYTHON_CMD /tmp/get-pip.py
+    if [ $? -ne 0 ]; then
+        log_message "error" "pip 설치 실패."
+        return 1
+    fi
+
+    log_message "info" "pip 설치 완료."
+    return 0
+}
+
 detect_python_and_pip() {
     if command -v python3 &>/dev/null; then
         PYTHON_CMD="python3"
@@ -112,13 +130,15 @@ detect_python_and_pip() {
     elif command -v pip &>/dev/null; then
         PIP_CMD="pip"
     else
-        log_message "error" "pip 실행 파일을 찾을 수 없습니다. pip가 설치되어 있는지 확인하세요."
-        exit 1
+        log_message "info" "pip 실행 파일을 찾을 수 없습니다. 설치를 시도합니다."
+        install_pip || { log_message "error" "pip 설치 실패. 종료합니다."; exit 1; }
     fi
 
     log_message "info" "감지된 Python 명령어: $PYTHON_CMD"
     log_message "info" "감지된 pip 명령어: $PIP_CMD"
 }
+
+
 
 setup_virtualenv() {
     VENV_DIR="$(dirname "$0")/venv"
@@ -162,6 +182,8 @@ setup_virtualenv() {
 }
 
 setup_dependencies() {
+    detect_python_and_pip
+
     if [ "$USE_GLOBAL_ENV" = true ]; then
         log_message "info" "글로벌 환경에서 의존성 확인 중..."
 
@@ -261,7 +283,6 @@ install() {
 }
 
 task() {
-		detect_python_and_pip
     setup_virtualenv
     setup_dependencies
 
