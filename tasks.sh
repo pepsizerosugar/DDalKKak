@@ -125,7 +125,7 @@ setup_virtualenv() {
     "$VENV_DIR/bin/pip" install --upgrade pip
 
     log_message "info" "필요한 패키지 설치 중..."
-    if ! "$VENV_DIR/bin/pip" install vdf blinker==1.7.0 psutil selenium selenium-wire requests; then
+    if ! "$VENV_DIR/bin/pip" install vdf psutil selenium; then
         log_message "error" "패키지 설치 실패."
         exit 1
     fi
