@@ -220,8 +220,8 @@ install() {
 }
 
 task() {
-		setup_virtualenv
-		setup_dependencies
+    setup_virtualenv
+    setup_dependencies
 
     log_message "info" "태스크 실행 중: auth.py 실행"
     TASK_RESULT=$("python" auth.py get_token_and_mid 2>&1)
