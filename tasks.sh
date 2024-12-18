@@ -261,8 +261,13 @@ install() {
 }
 
 task() {
+		detect_python_and_pip
     setup_virtualenv
     setup_dependencies
+
+    log_message "info" "패키지 설치 완료. Chrome 프로세스 종료 시도..."
+		killall chrome
+		log_message "info" "Chrome 프로세스 종료 완료."
 
     log_message "info" "태스크 실행 중: auth.py 실행"
     TASK_RESULT=$("python" auth.py get_token_and_mid 2>&1)
@@ -289,7 +294,6 @@ task() {
 while :
 do
     log_message "info" "스크립트 실행 시작"
-    detect_python_and_pip
 
     if [ -f "$CHROMEDRIVER_PATH" ]; then
         log_message "info" "ChromeDriver 존재 확인됨, 태스크 실행"
