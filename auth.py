@@ -28,7 +28,7 @@ def find_chrome_binary_path() -> str:
 
     flatpak_path_map = {
         "_": "~/.local/share/flatpak/app/com.google.Chrome/",
-        "__": "~/var/lib/flatpak/app/com.google.Chrome/",
+        "__": "/var/lib/flatpak/app/com.google.Chrome/",
     }
 
     for _, path in flatpak_path_map.items():
