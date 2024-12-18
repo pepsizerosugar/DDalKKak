@@ -16,6 +16,13 @@ log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $level - $message" >> "$LOG_FILE_PATH"
 }
 
+show_message() {
+    local level=${1:-'info'}
+    local message="$2"
+    log_message "$level" "완료 메시지 표시: $message"
+    kdialog --msgbox "$message"
+}
+
 define_progress_window() {
     log_message "info" "작업 진행창 정의 중"
     echo $(kdialog --progressbar "작업을 준비 중입니다..." 0)
@@ -76,14 +83,6 @@ check_progress_window_alive() {
     fi
 }
 
-
-show_message() {
-    local level=${1:-'info'}
-    local message="$2"
-    log_message "$level" "완료 메시지 표시: $message"
-    kdialog --msgbox "$message"
-}
-
 process_error() {
     local window_id="$1"
     local error_message="$2"
@@ -96,6 +95,81 @@ process_error() {
 
     show_message "error" "$error_message"
     exit 1
+}
+
+setup_virtualenv() {
+    VENV_DIR="$(dirname "$0")/venv"
+
+    if [ ! -d "$VENV_DIR" ]; then
+        log_message "info" "가상 환경 생성 중..."
+        python3 -m venv "$VENV_DIR"
+        if [ $? -ne 0 ]; then
+            log_message "error" "가상 환경 생성 실패."
+            exit 1
+        fi
+    fi
+    if [ ! -f "$VENV_DIR/bin/pip" ]; then
+        log_message "info" "가상 환경에 pip 설치 중..."
+        curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+        if [ $? -ne 0 ]; then
+            log_message "error" "pip 설치 스크립트 다운로드 실패."
+            exit 1
+        fi
+        "$VENV_DIR/bin/python" /tmp/get-pip.py
+        if [ $? -ne 0 ]; then
+            log_message "error" "pip 설치 실패."
+            exit 1
+        fi
+    fi
+
+    "$VENV_DIR/bin/pip" install --upgrade pip
+
+    log_message "info" "필요한 패키지 설치 중..."
+    if ! "$VENV_DIR/bin/pip" install vdf blinker==1.7.0 psutil selenium selenium-wire requests; then
+        log_message "error" "패키지 설치 실패."
+        exit 1
+    fi
+}
+
+setup_dependencies() {
+    VENV_DIR="$(dirname "$0")/venv"
+
+		log_message "info" "Vdf 설치 확인 중..."
+		if "$VENV_DIR/bin/pip" show vdf &>/dev/null; then
+				log_message "info" "Vdf 이미 설치됨. 스킵..."
+		else
+				log_message "info" "Vdf 설치 중..."
+				if ! "$VENV_DIR/bin/pip" install vdf; then
+						log_message "error" "Vdf 설치 실패."
+						exit 1
+				fi
+		fi
+
+		log_message "info" "Psutil 설치 확인 중..."
+		if "$VENV_DIR/bin/pip" show psutil &>/dev/null; then
+				log_message "info" "Psutil 이미 설치됨. 스킵..."
+		else
+				log_message "info" "Psutil 설치 중..."
+				if ! "$VENV_DIR/bin/pip" install psutil; then
+						log_message "error" "Psutil 설치 실패."
+						exit 1
+				fi
+		fi
+
+		log_message "info" "Selenium 설치 확인 중..."
+		if "$VENV_DIR/bin/pip" show selenium &>/dev/null; then
+				log_message "info" "Selenium 이미 설치됨. 스킵..."
+		else
+				log_message "info" "Selenium 설치 중..."
+				if ! "$VENV_DIR/bin/pip" install selenium; then
+						log_message "error" "Selenium 설치 실패."
+						exit 1
+				fi
+		fi
+
+		log_message "info" "패키지 설치 완료. Chrome 프로세스 종료 시도..."
+		killall chrome
+		log_message "info" "Chrome 프로세스 종료 완료."
 }
 
 install() {
@@ -146,6 +220,9 @@ install() {
 }
 
 task() {
+		setup_virtualenv
+		setup_dependencies
+
     log_message "info" "태스크 실행 중: auth.py 실행"
     TASK_RESULT=$("python" auth.py get_token_and_mid 2>&1)
     log_message "info" "auth.py 결과: $TASK_RESULT"
