@@ -97,85 +97,120 @@ process_error() {
     exit 1
 }
 
+detect_python_and_pip() {
+    if command -v python3 &>/dev/null; then
+        PYTHON_CMD="python3"
+    elif command -v python &>/dev/null; then
+        PYTHON_CMD="python"
+    else
+        log_message "error" "Python 실행 파일을 찾을 수 없습니다. Python이 설치되어 있는지 확인하세요."
+        exit 1
+    fi
+
+    if command -v pip3 &>/dev/null; then
+        PIP_CMD="pip3"
+    elif command -v pip &>/dev/null; then
+        PIP_CMD="pip"
+    else
+        log_message "error" "pip 실행 파일을 찾을 수 없습니다. pip가 설치되어 있는지 확인하세요."
+        exit 1
+    fi
+
+    log_message "info" "감지된 Python 명령어: $PYTHON_CMD"
+    log_message "info" "감지된 pip 명령어: $PIP_CMD"
+}
+
 setup_virtualenv() {
     VENV_DIR="$(dirname "$0")/venv"
 
     if [ ! -d "$VENV_DIR" ]; then
         log_message "info" "가상 환경 생성 중..."
-        python3 -m venv "$VENV_DIR"
+        $PYTHON_CMD -m venv "$VENV_DIR"
         if [ $? -ne 0 ]; then
-            log_message "error" "가상 환경 생성 실패."
-            exit 1
+            log_message "error" "가상 환경 생성 실패. 글로벌 환경으로 전환합니다."
+            USE_GLOBAL_ENV=true
+            return 1
         fi
     fi
+
     if [ ! -f "$VENV_DIR/bin/pip" ]; then
         log_message "info" "가상 환경에 pip 설치 중..."
         curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
         if [ $? -ne 0 ]; then
             log_message "error" "pip 설치 스크립트 다운로드 실패."
-            exit 1
+            USE_GLOBAL_ENV=true
+            return 1
         fi
         "$VENV_DIR/bin/python" /tmp/get-pip.py
         if [ $? -ne 0 ]; then
-            log_message "error" "pip 설치 실패."
-            exit 1
+            log_message "error" "pip 설치 실패. 글로벌 환경으로 전환합니다."
+            USE_GLOBAL_ENV=true
+            return 1
         fi
     fi
 
     "$VENV_DIR/bin/pip" install --upgrade pip
 
-    log_message "info" "필요한 패키지 설치 중..."
+    log_message "info" "가상 환경에서 패키지 설치 중..."
     if ! "$VENV_DIR/bin/pip" install vdf psutil selenium; then
-        log_message "error" "패키지 설치 실패."
-        exit 1
+        log_message "error" "가상 환경에서 패키지 설치 실패. 글로벌 환경으로 전환합니다."
+        USE_GLOBAL_ENV=true
+        return 1
     fi
+    USE_GLOBAL_ENV=false
+    return 0
 }
 
 setup_dependencies() {
-    VENV_DIR="$(dirname "$0")/venv"
+    if [ "$USE_GLOBAL_ENV" = true ]; then
+        log_message "info" "글로벌 환경에서 의존성 확인 중..."
 
-		log_message "info" "Vdf 설치 확인 중..."
-		if "$VENV_DIR/bin/pip" show vdf &>/dev/null; then
-				log_message "info" "Vdf 이미 설치됨. 스킵..."
-		else
-				log_message "info" "Vdf 설치 중..."
-				sudo steamos-readonly disable
-				if ! "$VENV_DIR/bin/pip" install vdf; then
-						log_message "error" "Vdf 설치 실패."
-						exit 1
-				fi
-				sudo steamos-readonly enable
-		fi
+        log_message "info" "Vdf 설치 확인 중..."
+        if $PIP_CMD show vdf &>/dev/null; then
+            log_message "info" "Vdf 이미 설치됨. 스킵..."
+        else
+            log_message "info" "Vdf 설치 중..."
+            sudo steamos-readonly disable
+            if ! sudo $PIP_CMD install vdf; then
+                log_message "error" "Vdf 설치 실패."
+                exit 1
+            fi
+            sudo steamos-readonly enable
+        fi
 
-		log_message "info" "Psutil 설치 확인 중..."
-		if "$VENV_DIR/bin/pip" show psutil &>/dev/null; then
-				log_message "info" "Psutil 이미 설치됨. 스킵..."
-		else
-				log_message "info" "Psutil 설치 중..."
-				sudo steamos-readonly disable
-				if ! "$VENV_DIR/bin/pip" install psutil; then
-						log_message "error" "Psutil 설치 실패."
-						exit 1
-				fi
-				sudo steamos-readonly enable
-		fi
+        log_message "info" "Psutil 설치 확인 중..."
+        if $PIP_CMD show psutil &>/dev/null; then
+            log_message "info" "Psutil 이미 설치됨. 스킵..."
+        else
+            log_message "info" "Psutil 설치 중..."
+            sudo steamos-readonly disable
+            if ! sudo $PIP_CMD install psutil; then
+                log_message "error" "Psutil 설치 실패."
+                exit 1
+            fi
+            sudo steamos-readonly enable
+        fi
 
-		log_message "info" "Selenium 설치 확인 중..."
-		if "$VENV_DIR/bin/pip" show selenium &>/dev/null; then
-				log_message "info" "Selenium 이미 설치됨. 스킵..."
-		else
-				log_message "info" "Selenium 설치 중..."
-				sudo steamos-readonly disable
-				if ! "$VENV_DIR/bin/pip" install selenium; then
-						log_message "error" "Selenium 설치 실패."
-						exit 1
-				fi
-				sudo steamos-readonly enable
-		fi
+        log_message "info" "Selenium 설치 확인 중..."
+        if $PIP_CMD show selenium &>/dev/null; then
+            log_message "info" "Selenium 이미 설치됨. 스킵..."
+        else
+            log_message "info" "Selenium 설치 중..."
+            sudo steamos-readonly disable
+            if ! sudo $PIP_CMD install selenium; then
+                log_message "error" "Selenium 설치 실패."
+                exit 1
+            fi
+            sudo steamos-readonly enable
+        fi
+    else
+        log_message "info" "가상 환경에서 의존성 확인 중..."
+        "$VENV_DIR/bin/pip" show vdf || "$VENV_DIR/bin/pip" install vdf
+        "$VENV_DIR/bin/pip" show psutil || "$VENV_DIR/bin/pip" install psutil
+        "$VENV_DIR/bin/pip" show selenium || "$VENV_DIR/bin/pip" install selenium
+    fi
 
-		log_message "info" "패키지 설치 완료. Chrome 프로세스 종료 시도..."
-		killall chrome
-		log_message "info" "Chrome 프로세스 종료 완료."
+    log_message "info" "의존성 설치 완료."
 }
 
 install() {
@@ -254,6 +289,8 @@ task() {
 while :
 do
     log_message "info" "스크립트 실행 시작"
+    detect_python_and_pip
+
     if [ -f "$CHROMEDRIVER_PATH" ]; then
         log_message "info" "ChromeDriver 존재 확인됨, 태스크 실행"
         task
